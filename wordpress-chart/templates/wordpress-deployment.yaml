@@ -1,0 +1,50 @@
+# Internal service to route traffic from Ingress to the WordPress pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-svc
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress
+    tier: frontend
+  clusterIP: None
+
+---
+# Deployment manages the stateless WordPress application pods
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+spec:
+  # Number of desired pods, defined in values.yaml dynamically
+  replicas: {{ .Values.replicaCount }} 
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      # Secret required to pull the WordPress image from AWS ECR
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: wordpress
+          image: {{ .Values.images.wordpress }}
+          # Passing database connection details as environment variables
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: WORDPRESS_DB_USER
+              value: {{ .Values.database.user | quote }}
+            - name: WORDPRESS_DB_PASSWORD
+              value: {{ .Values.database.password | quote }}
+            - name: WORDPRESS_DB_NAME
+              value: {{ .Values.database.name | quote }}
+          ports:
+            - containerPort: 80

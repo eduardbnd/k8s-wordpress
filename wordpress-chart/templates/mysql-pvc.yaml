@@ -1,0 +1,14 @@
+# Request for persistent storage to keep database data safe during pod restarts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  labels:
+    app: wordpress
+spec:
+  # Storage can be mounted as read-write by a single node
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  # Requesting 5 Gigabytes of persistent storage capacity

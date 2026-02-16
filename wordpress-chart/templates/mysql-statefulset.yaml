@@ -1,0 +1,60 @@
+# Headless service for the StatefulSet to provide a stable network DNS identity
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress
+    tier: mysql
+  clusterIP: None  # 'None' makes it a headless service
+
+---
+# StatefulSet manages the deployment and scaling of a set of Pods with stable identities
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: db
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      # Secret required to pull images from the private Amazon ECR repository
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: mysql
+          image: {{ .Values.images.mariadb }}
+          # Using native password authentication plugin for compatibility
+          args:
+            - "--default-authentication-plugin=mysql_native_password"
+          # Injecting database credentials securely from values.yaml
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ .Values.database.rootPassword | quote }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.database.name | quote }}
+            - name: MYSQL_USER
+              value: {{ .Values.database.user | quote }}
+            - name: MYSQL_PASSWORD
+              value: {{ .Values.database.password | quote }}
+          ports:
+            - containerPort: 3306
+          # Mounting the persistent volume to the MySQL data directory
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
