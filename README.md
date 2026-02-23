@@ -7,7 +7,7 @@ This project demonstrates the migration of a WordPress application (with a Maria
 - **Database (MariaDB):** Deployed using a `StatefulSet` to ensure a stable network identity, paired with a `PersistentVolumeClaim` (PVC) for reliable data persistence across pod restarts.
 - **Application (WordPress):** Deployed via a `Deployment` configured with 2 replicas to ensure High Availability (HA).
 - **Networking:** Internal traffic is routed through a `Service` (ClusterIP). External access is managed by an **NGINX Ingress Controller**, routing traffic via the `wordpress.local` domain.
-- **Container Registry:** Custom Docker images are built and pushed to a private **Amazon ECR** repository.
+- **Container Registry:** Official Docker images are pulled, re-tagged, and pushed to a private **Amazon ECR** repository to ensure cluster stability and avoid public registry rate limits.
 
 ## ⚙️ Configuration Management (Helm)
 The entire application stack is packaged into a custom **Helm Chart** (`wordpress-chart`). 
