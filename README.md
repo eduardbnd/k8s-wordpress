@@ -35,7 +35,7 @@ docker pull mariadb:10.6.4-focal
 
 3. **Tag images for your ECR repository:**
 ```bash
-docker tag wordpress:latest <your_ecr_link> k8s-wordpress:latest
+docker tag wordpress:latest <your_ecr_link>/k8s-wordpress:latest
 docker tag mariadb:10.6.4-focal <your_ecr_link>/k8s-mariadb:10.6.4-focal
 ```
 
