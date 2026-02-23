@@ -81,3 +81,10 @@ database:
 
 3. **Access the application:**
    Open your web browser and navigate to: `http://wordpress.local:8080`
+
+4. **Access the Monitoring Dashboard (Grafana):**
+   - Forward the Grafana port to your local machine:
+     ```bash
+     kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80
+     ```
+   - Open your web browser and navigate to: `http://localhost:3000`
