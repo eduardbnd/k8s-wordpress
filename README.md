@@ -19,26 +19,31 @@ This approach provides:
 To monitor the cluster's health and performance, the `kube-prometheus-stack` was installed.
 A custom **Grafana** dashboard (using the "Status history" visualization) was created to track the **Uptime** of the WordPress pods based on Prometheus metrics.
 
-## 📦 Workflow: Building and Pushing Images
-Before deploying the Helm chart, custom Docker images for WordPress and MariaDB were built and pushed to Amazon ECR:
+## 📦 Workflow: Pulling and Pushing Images
+Before deploying the Helm chart, official Docker images for WordPress and MariaDB were pulled, re-tagged, and pushed to a private Amazon ECR repository for stability and to avoid Docker Hub rate limits:
 
 1. **Authenticate Docker to ECR:**
-   ```bash
-   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your_aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+```bash
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your_aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+```
 
-2. **Build and Tag images:**
-   ```bash
-   # Build the image from Dockerfile
-   docker build -t k8s-wordpress .
+2. **Pull official images:**
+```bash
+docker pull wordpress:latest
+docker pull mariadb:10.6.4-focal
+```
 
-   # Tag the image for your ECR repository
-   docker tag k8s-wordpress:latest <your_ecr_link>/k8s-wordpress:latest
+3. **Tag images for your ECR repository:**
+```bash
+docker tag wordpress:latest <your_ecr_link> k8s-wordpress:latest
+docker tag mariadb:10.6.4-focal <your_ecr_link>/k8s-mariadb:10.6.4-focal
+```
 
-3. **Push to Repository:**
-   ```bash
-   # Push the image to Amazon ECR
-   docker push <your_ecr_link>/k8s-wordpress:latest
-
+4. **Push to Repository:**
+```bash
+docker push <your_ecr_link>/k8s-wordpress:latest
+docker push <your_ecr_link>/k8s-mariadb:10.6.4-focal
+```
 ## 📁 Configuration (values.yaml)
 > **Security Note:** The `values.yaml` file is excluded from this repository via `.gitignore` to protect sensitive information such as AWS Account IDs and database passwords.
 
